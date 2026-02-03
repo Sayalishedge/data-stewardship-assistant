@@ -1,0 +1,248 @@
+name: HCO_MODEL
+description: Semantic model for searching Healthcare Organization (HCO) data and their primary affiliations.
+tables:
+  - name: HCO
+    description: |
+      Healthcare Organization master data table containing all HCO records.
+      This is the primary table for searching healthcare organizations by name, address, city, or state.
+      When users search for an organization, query this table using ILIKE for partial name matching.
+    base_table:
+      database: CORTEX_ANALYST_HCK
+      schema: PUBLIC
+      table: HCO
+    dimensions:
+      - name: ADDRESS1
+        description: Primary street address of the Healthcare Organization.
+        expr: ADDRESS1
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - 924 BROADWAY
+          - 380 2ND AVE
+          - 419 N REYNOLDS RD
+      - name: ADDRESS2
+        description: Secondary address such as suite or unit number.
+        expr: ADDRESS2
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - STE 104
+          - SUITE S
+          - SUITE 300
+      - name: CITY
+        description: City where the Healthcare Organization is located.
+        expr: CITY
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - NEW YORK
+          - HOUSTON
+          - TOLEDO
+      - name: COUNTRY
+        description: Country code of the Healthcare Organization.
+        expr: COUNTRY
+        data_type: VARCHAR(10)
+        sample_values:
+          - US
+      - name: ID
+        description: |
+          Unique identifier for the Healthcare Organization. 
+          ALWAYS include this field in ALL query results - it is required for record selection.
+        expr: ID
+        data_type: VARCHAR(255)
+        sample_values:
+          - '2058992753'
+          - '2059264221'
+          - '2059241759'
+      - name: NAME
+        description: |
+          Official name of the Healthcare Organization. 
+          This is the PRIMARY search field. When users search for an organization:
+          - Use ILIKE with wildcards for partial matching: NAME ILIKE '%search_term%'
+          - Single word searches like "optum", "cvs", "walgreens" should search this field
+          - The search is case-insensitive
+          Examples:
+          - "optum" → NAME ILIKE '%optum%'
+          - "Optum Specialty" → NAME ILIKE '%Optum Specialty%'
+        expr: NAME
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - Optum Specialty Pharmacy
+          - MD Now Urgent Care Centers
+          - Primary Health Group Chippenham
+          - Saint Davids North Austin Medical Center
+          - CVS Pharmacy
+          - Walgreens
+      - name: PRIMARY_AFFL_ACCOUNT_ID
+        synonyms:
+          - affiliated_account_number
+          - main_account_id
+          - master_account_id
+          - parent_account_id
+          - primary_account_id
+          - primary_association_id
+          - primary_membership_id
+          - principal_account_id
+        description: Account ID of the primary affiliation
+        expr: PRIMARY_AFFL_ACCOUNT_ID
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - '2125835825'
+          - '2125835826'
+        cortex_search_service:
+          database: CORTEX_ANALYST_HCK
+          schema: PUBLIC
+          service: CC_SEARCH_SERVICE_CS
+      - name: STATE
+        description: State code of the Healthcare Organization.
+        expr: STATE
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - NY
+          - TX
+          - OH
+      - name: ZIP
+        description: ZIP code of the Healthcare Organization.
+        expr: ZIP
+        data_type: VARCHAR(16777216)
+        sample_values:
+          - '10010'
+          - '77090'
+          - '43615'
+    filters:
+      - name: ft_leonard_wood_op
+        description: Filters for Healthcare Organizations matching 'FT LEONARD WOOD HOSP OP'. Use when questions specifically reference this military hospital's outpatient facility. Helps identify records for this particular military healthcare facility when exact name matching is required.
+        expr: name ILIKE '%FT LEONARD WOOD HOSP OP%'
+      - name: park_name_contains
+        description: Filters for Healthcare Organizations with 'Park' in their name. Use when questions ask about healthcare facilities containing 'Park' in their name or when searching for park-related medical facilities. Helps users find healthcare organizations with 'Park' in their names for broad facility searches.
+        expr: name ILIKE '%Park%'
+      - name: park_west_hospital_exact
+        description: Filters for Healthcare Organizations specifically named 'PARK WEST HOSPITAL'. Use when questions explicitly reference this specific hospital name. Helps identify records for this particular healthcare facility when exact name matching is required.
+        expr: name ILIKE '%PARK WEST HOSPITAL%'
+      - name: park_west_name_contains
+        description: Filters for Healthcare Organizations with 'Park West' in their name. Use when questions ask about 'Park West' facilities or when searching for healthcare organizations containing this specific phrase. Helps narrow down searches to facilities specifically associated with Park West locations.
+        expr: name ILIKE '%Park West%'
+      - name: west_name_contains
+        description: Filters for Healthcare Organizations with 'West' in their name. Use when questions ask about healthcare facilities containing 'West' in their name or when searching for western-located medical facilities. Helps users find healthcare organizations with 'West' in their names for broad facility searches.
+        expr: name ILIKE '%West%'
+    primary_key:
+      columns:
+        - ID
+  - name: OUTLET_HCO_AFFILIATION
+    description: Affiliation records linking Healthcare Organizations to their PARENT outlet
+    base_table:
+      database: CORTEX_ANALYST_HCK
+      schema: PUBLIC
+      table: OUTLET_HCO_AFFILIATION
+    dimensions:
+      - name: HCO_ID
+        description: Unique identifier for the Healthcare Organization.
+        expr: HCO_ID
+        data_type: VARCHAR(255)
+      - name: OUTLET_ADDRESS1
+        description: Primary street address of the outlet.
+        expr: OUTLET_ADDRESS1
+        data_type: VARCHAR(255)
+        sample_values:
+          - 924 BROADWAY
+          - 380 2ND AVE
+          - 419 N REYNOLDS RD
+      - name: OUTLET_ADDRESS2
+        description: Secondary address such as suite or unit number.
+        expr: OUTLET_ADDRESS2
+        data_type: VARCHAR(255)
+        sample_values:
+          - STE 104
+          - SUITE S
+          - SUITE 300
+      - name: OUTLET_CITY
+        description: City where the outlet is located.
+        expr: OUTLET_CITY
+        data_type: VARCHAR(255)
+        sample_values:
+          - NEW YORK
+          - HOUSTON
+          - TOLEDO
+      - name: OUTLET_COUNTRY
+        description: Country code of the outlet location.
+        expr: OUTLET_COUNTRY
+        data_type: VARCHAR(255)
+        sample_values:
+          - US
+      - name: OUTLET_ID
+        description: Unique identifier for the outlet location.
+        expr: OUTLET_ID
+        data_type: VARCHAR(255)
+      - name: OUTLET_NAME
+        description: Name of the outlet location.
+        expr: OUTLET_NAME
+        data_type: VARCHAR(255)
+      - name: OUTLET_STATE
+        description: State code of the outlet location.
+        expr: OUTLET_STATE
+        data_type: VARCHAR(255)
+        sample_values:
+          - NY
+          - TX
+          - OH
+      - name: OUTLET_ZIP
+        description: ZIP code of the outlet location.
+        expr: OUTLET_ZIP
+        data_type: VARCHAR(255)
+        sample_values:
+          - '10010'
+          - '77090'
+          - '43615'
+    filters: []
+    primary_key:
+      columns:
+        - OUTLET_ID
+relationships:
+  - name: OUTLET_TO_HCO
+    left_table: OUTLET_HCO_AFFILIATION
+    right_table: HCO
+    relationship_columns:
+      - left_column: HCO_ID
+        right_column: ID
+    join_type: left_outer
+    relationship_type: many_to_one
+verified_queries:
+  - name: Search for healthcare organizations (HCOs) whose name contains any of the case-insensitive variants derived from “Lakeview Circle Primary Care”, the full phrase lakeview circle primary care, or any three-word combination in any order formed from lakeview, circle, primary, and care; Return their details along with their primary hospital affiliation information if present, otherwise return affiliation fields as NULL.
+    question: Search for healthcare organizations (HCOs) whose name contains any of the case-insensitive variants derived from “Lakeview Circle Primary Care”, the full phrase lakeview circle primary care, or any three-word combination in any order formed from lakeview, circle, primary, and care; Return their details along with their primary hospital affiliation information if present, otherwise return affiliation fields as NULL.
+    sql: |-
+      SELECT
+        DISTINCT h.id AS hco_id,
+        h.name AS hco_name,
+        h.address1,
+        h.city,
+        h.state,
+        h.zip,
+        o.outlet_id,
+        o.outlet_name,
+        o.outlet_address1,
+        o.outlet_city,
+        o.outlet_state,
+        o.outlet_zip
+      FROM
+        hco AS h
+        LEFT OUTER JOIN outlet_hco_affiliation AS o ON h.id = o.hco_id
+        AND h.PRIMARY_AFFL_ACCOUNT_ID IS NOT NULL
+      WHERE
+        h.name ILIKE '%lakeview%'
+        OR h.name ILIKE '%circle%'
+        OR h.name ILIKE '%primary%'
+        OR h.name ILIKE '%care%'
+        OR h.name ILIKE '%lakeview circle%'
+        OR h.name ILIKE '%circle primary%'
+        OR h.name ILIKE '%primary care%'
+        OR h.name ILIKE '%lakeview circle primary%'
+        OR h.name ILIKE '%circle primary care%'
+        OR h.name ILIKE '%lakeview circle primary care%'
+      ORDER BY
+        h.name,
+        o.outlet_name
+    use_as_onboarding_question: true
+    verified_by: Data Dynamos
+    verified_at: 1769571087
+module_custom_instructions:
+  sql_generation: |-
+    - Apply LIMIT 10 unless user specifies otherwise
+    - ALWAYS use ILIKE for name matching
+    - ALWAYS use partial words for name matching

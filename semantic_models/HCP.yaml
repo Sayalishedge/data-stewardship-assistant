@@ -1,0 +1,144 @@
+name: HCP_MODEL
+description: |
+  Semantic model for searching Healthcare Providers (HCP / Doctors)
+  and conditionally returning their PRIMARY hospital (HCO) affiliation
+tables:
+  - name: NPI
+    description: |
+      Master table containing Healthcare Provider (HCP / Doctor) data.
+      This is the driving table for all searches.
+    base_table:
+      database: CORTEX_ANALYST_HCK
+      schema: PUBLIC
+      table: NPI
+    dimensions:
+      - name: ADDRESS1
+        expr: ADDRESS1
+        data_type: VARCHAR
+      - name: CITY
+        expr: CITY
+        data_type: VARCHAR
+      - name: FIRST_NM
+        expr: FIRST_NM
+        data_type: VARCHAR
+      - name: ID
+        expr: ID
+        data_type: NUMBER
+      - name: LAST_NM
+        expr: LAST_NM
+        data_type: VARCHAR
+      - name: NAME
+        expr: NAME
+        data_type: VARCHAR
+      - name: NPI
+        expr: NPI
+        data_type: NUMBER
+      - name: PRIMARY_AFFL_HCO_ACCOUNT_ID
+        description: |
+          Indicates whether the provider has a PRIMARY hospital affiliation.
+        expr: PRIMARY_AFFL_HCO_ACCOUNT_ID
+        data_type: NUMBER
+      - name: STATE
+        expr: STATE
+        data_type: VARCHAR
+      - name: ZIP
+        expr: ZIP
+        data_type: VARCHAR
+    filters:
+      - name: provider_name_search
+        description: |
+          Case-insensitive provider name search.
+          MUST search across NAME, FIRST_NM, and LAST_NM using ILIKE.
+        expr: |
+          NAME ILIKE 'david'
+          OR FIRST_NM ILIKE '%david'
+          OR LAST_NM ILIKE '%david'
+      - name: provider_npi_search
+        synonyms:
+          - clinician_npi_search
+          - npi_lookup
+          - provider_identifier_search
+        description: Exact match search for a 10-digit NPI number.
+        expr: NPI
+    primary_key:
+      columns:
+        - ID
+  - name: HCP_HCO_AFFILIATION
+    synonyms: []
+    description: |
+      Hospital (HCO) affiliation table.
+      ONLY the PRIMARY affiliation is allowed to be joined.
+    base_table:
+      database: CORTEX_ANALYST_HCK
+      schema: PUBLIC
+      table: HCP_HCO_AFFILIATION
+    dimensions:
+      - name: HCO_ADDRESS1
+        expr: HCO_ADDRESS1
+        data_type: VARCHAR
+      - name: HCO_CITY
+        expr: HCO_CITY
+        data_type: VARCHAR
+      - name: HCO_ID
+        expr: HCO_ID
+        data_type: VARCHAR
+      - name: HCO_NAME
+        expr: HCO_NAME
+        data_type: VARCHAR
+      - name: HCO_STATE
+        expr: HCO_STATE
+        data_type: VARCHAR
+      - name: HCO_ZIP
+        expr: HCO_ZIP
+        data_type: VARCHAR
+    primary_key:
+      columns:
+        - HCO_ID
+relationships:
+  - name: hcp_hcp_affiliations
+    left_table: NPI
+    relationship_columns:
+      - left_column: PRIMARY_AFFL_HCO_ACCOUNT_ID
+        right_column: HCO_ID
+    right_table: HCP_HCO_AFFILIATION
+verified_queries:
+  - name: |
+
+      Search for healthcare providers with name containing 'david' OR 'weibe' OR the full phrase 'david weibe' in their name, first name, or last name fields. Return their details along with their primary hospital affiliation information (if any)
+    question: |
+
+      Search for healthcare providers with name containing 'david' OR 'weibe' OR the full phrase 'david weibe' in their name, first name, or last name fields. Return their details along with their primary hospital affiliation information (if any)
+    sql: |-
+      SELECT
+        n.first_nm,
+        n.last_nm,
+        n.name,
+        n.address1,
+        n.city,
+        n.state,
+        n.zip,
+        n.npi,
+        h.hco_name,
+        h.hco_address1,
+        h.hco_city,
+        h.hco_state,
+        h.hco_zip
+      FROM
+        npi AS n
+        LEFT OUTER JOIN hcp_hco_affiliation AS h ON n.primary_affl_hco_account_id = h.hco_id
+        AND n.primary_affl_hco_account_id is not null
+      WHERE
+        n.NAME ILIKE '%david weibe%'
+        OR n.LAST_NM ILIKE '%david weibe%'
+        OR n.FIRST_NM ILIKE '%david weibe%'
+        OR n.NAME ILIKE '%david%'
+        OR n.LAST_NM ILIKE '%david'
+        OR n.FIRST_NM ILIKE '%david'
+        OR n.NAME ILIKE '%weibe%'
+        OR n.LAST_NM ILIKE '%weibe%'
+        OR n.FIRST_NM ILIKE '%weibe%'
+    use_as_onboarding_question: false
+    verified_by: Data Dynamos
+    verified_at: 1769568976
+module_custom_instructions:
+  sql_generation: ' - Limit the final output number of rows to 10'
