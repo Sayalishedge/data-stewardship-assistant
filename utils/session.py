@@ -116,6 +116,8 @@ def init_data_steward_session_state(entity_type: str = "HCP", force_reset: bool 
         "demographic_expander_state": False,
         "provider_info_change": False,
         "semantic_model_file": "HCP.yaml" if entity_type == "HCP" else "HCO.yaml",
+        "search_query": None,          # What user typed in search
+        "enrichment_query": None,      # What web enrichment should use
     }
 
     # Force reset all values when switching assistant types

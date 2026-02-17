@@ -96,7 +96,13 @@ def render_enrichment_page(session, selected_record_df: pd.DataFrame):
             )
     
     # Fetch data from Perplexity if not already cached
-    cache_key = f"perplexity_response_{entity_type}_{record_id}"
+    #cache_key = f"perplexity_response_{entity_type}_{record_id}"
+    if is_new_record:
+        web_query = st.session_state.get("web_search_query", "NEW")
+        cache_key = f"perplexity_response_{entity_type}_NEW_{web_query}"
+    else:
+        cache_key = f"perplexity_response_{entity_type}_{record_id}"
+
     
     if cache_key not in st.session_state:
         with st.spinner("🔍 Fetching latest data from web sources..."):
@@ -141,8 +147,16 @@ def render_enrichment_page(session, selected_record_df: pd.DataFrame):
     field_mapping = get_field_mapping_for_entity(entity_type)
     
     # Expander title
+    #if entity_type == "HCP":
+    #   expander_title = f"Demographic information of : {current_record.get('Name', 'N/A')} (NPI: {record_npi})"
+
     if entity_type == "HCP":
-        expander_title = f"Demographic information of : {current_record.get('Name', 'N/A')} (NPI: {record_npi})"
+        if is_new_record:
+            proposed_name = proposed_record.get('Name', st.session_state.get("web_search_query", "N/A"))
+            proposed_npi = proposed_record.get('NPI', 'N/A')
+            expander_title = f"Demographic information of : {proposed_name} (NPI: {proposed_npi})"
+        else:
+            expander_title = f"Demographic information of : {current_record.get('Name', 'N/A')} (NPI: {record_npi})"
     else:
         expander_title = f"Address information of : {current_record.get('Name', 'N/A')}"
     

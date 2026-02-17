@@ -67,6 +67,7 @@ def display_search_results():
                         st.markdown("")
                         if st.button("🔍 Still want to proceed with Web Search?", type="primary"):
                             entity_type = st.session_state.get("assistant_type", "HCP")
+                            st.session_state.web_search_query = st.session_state.get("last_prompt")
                             # Create a default empty record for enrichment
                             st.session_state.empty_record_for_enrichment = {
                                 'ID': 'N/A',
@@ -81,9 +82,6 @@ def display_search_results():
                                 'PRIMARY_AFFL_HCO_ACCOUNT_ID': None,
                                 'PRIMARY_AFFL_ACCOUNT_ID': None
                             }
-                            # Store the search query for web search context
-                            st.session_state.web_search_query = st.session_state.get('last_prompt', '')
-                            # Set the correct selected ID based on entity type
                             st.session_state[f"selected_{entity_type.lower()}_id"] = 'empty_record'
                             st.session_state.current_view = "enrichment_page"
                             st.rerun()

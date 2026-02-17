@@ -68,6 +68,14 @@ def render_main_page(session):
 
         if current_prompt and current_prompt != st.session_state.get("last_prompt"):
             st.session_state.last_prompt = current_prompt
+            st.session_state.web_search_query = None
+
+            # Reset enrichment-related state
+            st.session_state.enrichment_query = None
+            st.session_state.empty_record_for_enrichment = None
+            st.session_state.selected_record_df = None
+            st.session_state.proposed_record = None
+            st.session_state.approved_cols = []
 
             # These can be defined as regular variables and not as session state as these are not expected to change
             DATABASE = "CORTEX_ANALYST_HCK"
