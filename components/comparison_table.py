@@ -279,8 +279,8 @@ def transform_current_record_for_comparison(
     
     result = {
         "Name": get_val("NAME"),
-        "First Name": get_val("FIRST_NAME"),
-        "Last Name": get_val("LAST_NAME"),
+        "First Name": get_val("FIRST_NM"),
+        "Last Name": get_val("LAST_NM"),
         "NPI": get_val("NPI"),
         "Degree": get_val("DEGREE"),
         "Address Line1": get_val("ADDRESS1"),
