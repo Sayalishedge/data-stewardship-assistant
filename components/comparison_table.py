@@ -284,7 +284,7 @@ def transform_current_record_for_comparison(
         "NPI": get_val("NPI"),
         "Degree": get_val("DEGREE"),
         "Address Line1": get_val("ADDRESS1"),
-        "Address Line2": get_val("ADDRESS2") or "",
+        "Address Line2": get_val("ADDRESS2"),
         "City": get_val("CITY"),
         "State": get_val("STATE"),
         "ZIP": get_val("ZIP"),
