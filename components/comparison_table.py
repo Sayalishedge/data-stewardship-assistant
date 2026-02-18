@@ -160,8 +160,8 @@ def get_field_mapping_for_entity(entity_type: str) -> Dict[str, str]:
     if entity_type == "HCP":
         return {
             "Name": "Name",
-            "First Name": "First Name",
-            "Last Name": "Last Name",
+            "First Name": "FIRST_NM",
+            "Last Name": "LAST_NM",
             "NPI": "NPI",
             "Degree": "Degree",
             "Address Line 1": "Address Line1",
