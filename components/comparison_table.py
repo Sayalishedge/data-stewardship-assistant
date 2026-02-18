@@ -275,7 +275,7 @@ def transform_current_record_for_comparison(
         val = record.get(key, "N/A")
         if val is None or (isinstance(val, float) and str(val) == 'nan'):
             return "N/A"
-        return str(val).strip() if val else "N/A"
+        return str(val).strip() if val else "N/A" 
     
     result = {
         "Name": get_val("NAME"),
