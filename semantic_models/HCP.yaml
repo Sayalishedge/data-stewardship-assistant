@@ -44,6 +44,26 @@ tables:
       - name: ZIP
         expr: ZIP
         data_type: VARCHAR
+      - name: PREFIX
+        expr: PREFIX
+        data_type: VARCHAR
+
+      - name: MIDDLE_NM
+        expr: MIDDLE_NM
+        data_type: VARCHAR
+
+      - name: SUFFIX
+        expr: SUFFIX
+        data_type: VARCHAR
+
+      - name: DEGREE
+        expr: DEGREE
+        data_type: VARCHAR
+
+      - name: ADDRESS2
+        expr: ADDRESS2
+        data_type: VARCHAR
+  
     filters:
       - name: provider_name_search
         description: |
@@ -109,7 +129,7 @@ verified_queries:
 
       Search for healthcare providers with name containing 'david' OR 'weibe' OR the full phrase 'david weibe' in their name, first name, or last name fields. Return their details along with their primary hospital affiliation information (if any)
     sql: |-
-      SELECT
+      SELECT DISTINCT
         n.first_nm,
         n.last_nm,
         n.name,
@@ -138,7 +158,12 @@ verified_queries:
         OR n.LAST_NM ILIKE '%weibe%'
         OR n.FIRST_NM ILIKE '%weibe%'
     use_as_onboarding_question: false
-    verified_by: Data Dynamos
-    verified_at: 1769568976
+    verified_by: data dynamos
+    verified_at: 1769622790
 module_custom_instructions:
-  sql_generation: ' - Limit the final output number of rows to 10'
+  sql_generation: |-
+    - Apply LIMIT 10 unless user specifies otherwise
+    - ALWAYS use ILIKE for name matching
+    - First try matching with full word and then use partial words for name matching in name,first_name and last_name
+    - Always ADD DISTINCT keyword to the final SELECT clause
+    - Sort the results based on ID lowest to highest
