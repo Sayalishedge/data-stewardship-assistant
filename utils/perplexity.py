@@ -81,8 +81,12 @@ def get_consolidated_data_for_hcp(
     - ZIP: 5-digit zipcode (e.g., "28202")
 
     **Part 2 - Practice/Hospital Affiliation Details:**
-    Search for the healthcare organization(s) where "{hcp_name}" practices.
+    Search for the healthcare organization(s) for the demographics for: {hcp_name}, NPI: {hcp_npi}, at {hcp_address1}, {hcp_city},{hcp_state},{hcp_zip}.
     
+    Using the verified Name, NPI, and Address details found in Part 1, search the web 
+    (NPI Registry, Hospital Directories, etc.) to find ALL Healthcare Organizations (HCOs) 
+    where this specific provider currently practices.
+
     For each affiliated organization, you MUST provide:
     - NPI: The HCP's NPI number (10 digits). Use the provided {hcp_npi} if available
     - HCO_ID: The organization's NPI number (10 digits). Use "N/A" only if truly not findable.
@@ -93,6 +97,8 @@ def get_consolidated_data_for_hcp(
     - HCO_ZIP: REQUIRED - 5-digit zipcode
 
     **CRITICAL:** 
+    - Ensure the affiliations belong to the SPECIFIC provider at the verified address.
+    - Return the HCO Name, HCO NPI (as HCO_ID), and the HCO's full street address.
     - If you find an affiliated organization name, you MUST search for their complete address.
     - Do NOT leave address fields as "N/A" if the organization exists.
     - Return actual found data, not "N/A" unless truly not findable after thorough search.

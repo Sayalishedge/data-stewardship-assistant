@@ -10,7 +10,8 @@ def build_affiliations_dict(
     db_affiliations_df: pd.DataFrame,
     ai_affiliations: List[Dict[str, Any]],
     entity_name: str = "",
-    entity_type: str = "HCP"
+    entity_type: str = "HCP",
+    proposed_record: Dict[str, Any] = None  # NEW PARAMETER
 ) -> Dict[str, Dict[str, Any]]:
     """
     Build a combined dictionary of affiliations from database and AI sources.
@@ -72,22 +73,35 @@ def build_affiliations_dict(
             }
     
     # Filter and add AI affiliations
-    entity_name_upper = entity_name.upper().strip() if entity_name else ""
-    entity_name_parts = [p.strip() for p in entity_name_upper.replace(',', ' ').replace('.', ' ').split() if len(p.strip()) > 2]
-    
+    # --- UPDATED FILTERING LOGIC ---
+    # Get clean versions of the Proposed Record data to use as a exclusion filter
+    prop_name = str(proposed_record.get('Name', '')).upper().strip() if proposed_record else entity_name.upper().strip()
+    prop_addr = str(proposed_record.get('Address Line1', '')).upper().strip() if proposed_record else ""
+    prop_npi  = str(proposed_record.get('NPI', '')).strip() if proposed_record else ""
+
     for idx, hco in enumerate(ai_affiliations):
-        hco_name = hco.get('HCO_Name', hco.get('HCO NAME', ''))
-        if not hco_name or pd.isna(hco_name) or str(hco_name).strip() == "":
+        hco_name = str(hco.get('HCO_Name', hco.get('HCO NAME', ''))).strip()
+        if not hco_name or pd.isna(hco_name) or hco_name == "":
             continue
             
-        hco_name_upper = str(hco_name).upper().strip()
+        hco_name_upper = hco_name.upper()
+        hco_addr_upper = str(hco.get('HCO_Address1', hco.get('HCO ADDRESS', ''))).upper().strip()
+        hco_id = str(hco.get('HCO_ID', hco.get('HCO ID', ''))).strip()
         
-        # Skip if HCO name contains the entity's name (likely self-reference)
+        # SELF-REFERENCE FILTERING: Is this affiliation actually the primary record?
         is_self_reference = False
-        if entity_name_parts:
-            matching_parts = sum(1 for part in entity_name_parts if part in hco_name_upper)
-            if matching_parts >= len(entity_name_parts) / 2:
-                is_self_reference = True
+        
+        # Check A: NPI Match (Highest accuracy)
+        if prop_npi and hco_id == prop_npi and prop_npi not in ['N/A', '', 'None']:
+            is_self_reference = True
+        
+        # Check B: Name Match (Direct or Substring)
+        elif prop_name and (prop_name in hco_name_upper or hco_name_upper in prop_name):
+            is_self_reference = True
+            
+        # Check C: Address Match (Catches duplicates even if the AI used a shorthand name)
+        elif prop_addr and prop_addr in hco_addr_upper and len(prop_addr) > 5:
+            is_self_reference = True
         
         if not is_self_reference:
             hco_id = hco.get('HCO_ID', hco.get('HCO ID', ''))
