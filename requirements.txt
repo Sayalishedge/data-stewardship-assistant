@@ -8,4 +8,4 @@ perplexityai==0.22.2
 google-genai>=0.3.0
 pydantic==2.12.5
 
-openai==2.16.0gi
+openai==2.16.0
