@@ -18,7 +18,7 @@ def get_gemini_client():
 def get_consolidated_data_for_hcp(
     client, # Now a Gemini client
     hcp_data: Dict[str, Any],
-    model_name: str = "gemini-2.0-flash",
+    model_name: str = "gemini-1.5-flash",
     search_query: str = None,
     **kwargs
 ) -> Dict[str, Any]:
